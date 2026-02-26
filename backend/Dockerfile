@@ -12,4 +12,4 @@ COPY .env ./.env
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["uvicorn", "appforge.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "appforge.app.main:app", "--host", "0.0.0.0", "--port", "8000"]
