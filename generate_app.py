@@ -65,7 +65,7 @@ from pathlib import Path
 p = inflect.engine()
 
 ROOT = Path(__file__).resolve().parent
-BACKEND_APP = ROOT / "backend" / "app"
+BACKEND_APP = ROOT / "backend" / "appforge"
 FRONTEND = ROOT / "frontend"
 
 # ---------- Helpers ----------
@@ -86,14 +86,14 @@ class {ModelName}(Base, BaseModel):
 {fields}
 """
 
-FIELD_TEMPLATE = "    {name} = Column({type}, nullable={nullable})"
+from appforge.db import Base
+from appforge.models.base_model import BaseModel
 
-def sql_type(field_type: str) -> str:
-    mapping = {
-        "string": "String",
-        "float": "Float",
-        "int": "Integer",
-        "boolean": "Boolean",
+class {ModelName}(Base, BaseModel):
+    __tablename__ = "{table}"
+
+{fields}
+"""
     }
     return mapping.get(field_type, "String")
 
@@ -105,28 +105,28 @@ def generate_model(model: dict):
         if f["name"] in ["id", "created_at", "updated_at"]:
             continue
         fields_src.append(
-            FIELD_TEMPLATE.format(
-                name=f["name"],
-                type=sql_type(f["type"]),
-                nullable=str(not f.get("required", False)),
-            )
-        )
-    content = MODEL_TEMPLATE.format(
-        ModelName=pascal(name),
-        table=table,
-        fields="\n".join(fields_src),
-    )
-    models_dir = BACKEND_APP / "models"
-    models_dir.mkdir(parents=True, exist_ok=True)
-    (models_dir / f"{table}.py").write_text(content, encoding="utf-8")
-    print(f"✔ Model: {table}.py")
+            from appforge.models.{table} import {ModelName}
 
-# ---------- 2) CRUD generator ----------
-CRUD_TEMPLATE = """from sqlalchemy.orm import Session
-from app.models.{table} import {ModelName}
+            def get_{table_plural}(db: Session):
+                return db.query({ModelName}).all()
 
-def get_{table_plural}(db: Session):
-    return db.query({ModelName}).all()
+            def get_{table}(db: Session, id: int):
+                return db.query({ModelName}).filter({ModelName}.id == id).first()
+
+            def create_{table}(db: Session, data: dict):
+                obj = {ModelName}(**data)
+                db.add(obj)
+                db.commit()
+                db.refresh(obj)
+                return obj
+
+            def delete_{table}(db: Session, id: int):
+                obj = get_{table}(db, id)
+                if obj:
+                    db.delete(obj)
+                    db.commit()
+                return obj
+            """
 
 def get_{table}(db: Session, id: int):
     return db.query({ModelName}).filter({ModelName}.id == id).first()
@@ -142,27 +142,27 @@ def delete_{table}(db: Session, id: int):
     obj = get_{table}(db, id)
     if obj:
         db.delete(obj)
-        db.commit()
-    return obj
-"""
-
-def generate_crud(model: dict):
-    name = model["name"]
-    table = snake(name)
-    table_plural = p.plural(table)
-    content = CRUD_TEMPLATE.format(
-        table=table,
-        table_plural=table_plural,
-        ModelName=pascal(name),
+    from appforge.db import get_db
+    from appforge.crud.{table}_crud import (
+        get_{table_plural},
+        create_{table},
+        delete_{table},
     )
-    crud_dir = BACKEND_APP / "crud"
-    crud_dir.mkdir(parents=True, exist_ok=True)
-    (crud_dir / f"{table}_crud.py").write_text(content, encoding="utf-8")
-    print(f"✔ CRUD: {table}_crud.py")
 
-# ---------- 3) Route generator ----------
-ROUTE_TEMPLATE = """from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+    router = APIRouter(prefix="/{table}", tags=["{ModelName}"])
+
+    @router.get("/")
+    def list_{table_plural}(db: Session = Depends(get_db)):
+        return get_{table_plural}(db)
+
+    @router.post("/")
+    def add_{table}(data: dict, db: Session = Depends(get_db)):
+        return create_{table}(db, data)
+
+    @router.delete("/{table}_id")
+    def remove_{table}(table_id: int, db: Session = Depends(get_db)):
+        return delete_{table}(db, table_id)
+    """
 from app.db import get_db
 from app.crud.{table}_crud import (
     get_{table_plural},

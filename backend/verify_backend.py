@@ -7,14 +7,14 @@ ROOT = pathlib.Path(__file__).resolve().parent
 
 def check_structure():
     required = [
-        ROOT / "app",
-        ROOT / "app" / "__init__.py",
-        ROOT / "app" / "main.py",
-        ROOT / "app" / "db.py",
-        ROOT / "app" / "models" / "__init__.py",
-        ROOT / "app" / "models" / "item.py",
-        ROOT / "app" / "routes" / "__init__.py",
-        ROOT / "app" / "routes" / "items.py",
+        ROOT / "appforge",
+        ROOT / "appforge" / "__init__.py",
+        ROOT / "appforge" / "main.py",
+        ROOT / "appforge" / "db.py",
+        ROOT / "appforge" / "models" / "__init__.py",
+        ROOT / "appforge" / "models" / "item.py",
+        ROOT / "appforge" / "routes" / "__init__.py",
+        ROOT / "appforge" / "routes" / "items.py",
     ]
     missing = [str(p) for p in required if not p.exists()]
     if missing:
@@ -26,7 +26,7 @@ def check_structure():
 
 def check_imports():
     try:
-        importlib.import_module("app.main")
+        importlib.import_module("appforge.main")
         print("✔ Import OK")
     except Exception as e:
         print("❌ Import failed:", e)
@@ -34,7 +34,7 @@ def check_imports():
 
 def check_db_schema():
     try:
-        from app.db import Base, engine
+        from appforge.db import Base, engine
         Base.metadata.create_all(bind=engine)
         print("✔ DB schema OK")
     except Exception as e:
