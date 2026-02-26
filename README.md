@@ -1,4 +1,4 @@
-ppForge — AI‑Powered Cloud App Builder
+AppForge — AI‑Powered Cloud App Builder
 AppForge is a cloud‑native app builder that lets anyone create real, production‑ready applications without touching local environments. It combines AI code generation, a visual editor, and a per‑user cloud runtime with instant preview, auto‑sleep, and fast wake. The goal is simple: real apps, zero technical friction.
 
 ✨ Key Features
