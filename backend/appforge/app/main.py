@@ -1,19 +1,27 @@
-import importlib
-import pkgutil
 from fastapi import FastAPI
-from appforge.db import Base, engine
-from appforge import routes
+from importlib import import_module
+from pkgutil import iter_modules
 
+from db import engine
+from models import Base
+
+# Create all database tables on startup
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="App Builder Backend")
+app = FastAPI(
+    title="App Builder Backend",
+    version="0.1.0"
+)
 
-# Automatically discover and register all routers in appforge/routes
-for _, module_name, _ in pkgutil.iter_modules(routes.__path__):
-    module = importlib.import_module(f"appforge.routes.{module_name}")
-    if hasattr(module, "router"):
-        app.include_router(module.router)
+# Auto‑load all routers from backend/routes
+for module in iter_modules(['routes']):
+    module_name = module.name
+    imported = import_module(f"routes.{module_name}")
 
+    if hasattr(imported, "router"):
+        app.include_router(imported.router)
+
+# Health check endpoint
 @app.get("/health")
 def health():
     return {"status": "ok"}
