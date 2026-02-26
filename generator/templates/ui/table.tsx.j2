@@ -1,0 +1,18 @@
+export default function {{ModelName}}Table({ items }) {
+  return (
+    <table>
+      <thead>
+        <tr>
+          {{headers}}
+        </tr>
+      </thead>
+      <tbody>
+        {items.map(i => (
+          <tr key={i.id}>
+            {{cells}}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}

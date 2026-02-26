@@ -1,0 +1,28 @@
+import { useState } from "react";
+import { create{{ModelName}} } from "../services/{{table}}";
+
+export default function Create{{ModelName}}() {
+  const [form, setForm] = useState({
+    {{form_fields}}
+  });
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await create{{ModelName}}(form);
+    alert("Created!");
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <h2>Create {{ModelName}}</h2>
+
+      {{form_inputs}}
+
+      <button type="submit">Create</button>
+    </form>
+  );
+}

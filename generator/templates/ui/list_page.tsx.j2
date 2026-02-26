@@ -1,0 +1,39 @@
+import { useEffect, useState } from "react";
+import { fetch{{ModelNamePlural}}, delete{{ModelName}} } from "../services/{{table}}";
+
+export default function {{ModelName}}List() {
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    fetch{{ModelNamePlural}}().then(res => setItems(res.data));
+  }, []);
+
+  const handleDelete = async (id: number) => {
+    await delete{{ModelName}}(id);
+    setItems(items.filter(i => i.id !== id));
+  };
+
+  return (
+    <div>
+      <h1>{{ModelNamePlural}}</h1>
+      <table>
+        <thead>
+          <tr>
+            {{headers}}
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map(i => (
+            <tr key={i.id}>
+              {{cells}}
+              <td>
+                <button onClick={() => handleDelete(i.id)}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}

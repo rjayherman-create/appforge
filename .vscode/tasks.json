@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Verify Backend",
+      "type": "shell",
+      "command": "PYTHONPATH=. python verify_backend.py",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}
